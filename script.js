@@ -43,15 +43,14 @@ town.appendChild(road);
 // Create avatars with AI goals
 for (let i = 0; i < avatarCount; i++) {
     const avatar = document.createElement('div');
-    avatar.speed = 0.5;       // uniform slower speed
-    avatar.textTimer = 0;     // timer for slow speech updates
     avatar.classList.add('avatar');
     avatar.style.backgroundColor = `hsl(${Math.random()*360}, 70%, 50%)`;
     avatar.style.left = Math.random() * (town.clientWidth - 30) + 'px';
     avatar.style.top = Math.random() * (town.clientHeight - 30) + 'px';
 
-    // Assign a goal: random object
-    avatar.goal = objects[Math.floor(Math.random()*objects.length)];
+    // ⚡ NEW: properties for slow movement and slow text
+    avatar.speed = 0.5;       // all avatars move slower and uniformly
+    avatar.textTimer = 0;     // timer for speech updates
 
     // Speech bubble
     const speech = document.createElement('div');
@@ -61,9 +60,14 @@ for (let i = 0; i < avatarCount; i++) {
 
     avatar.speech = speech;
 
+    // Click interaction
     avatar.addEventListener('click', () => {
         avatar.speech.innerText = "You clicked me! I will still try to escape!";
     });
+
+    town.appendChild(avatar);
+    avatars.push(avatar);
+}
 
     town.appendChild(avatar);
     avatars.push(avatar);
@@ -117,6 +121,29 @@ function moveAvatars() {
         avatar.speech.style.top = (y-20) + 'px';
 
         // Slow text updates
+        avatar.textTimer -= 500; // matches interval below
+        if(avatar.textTimer <= 0){
+            let msg = thoughts[Math.floor(Math.random()*thoughts.length)];
+            avatar.speech.innerText = msg;
+            avatar.textTimer = 3000 + Math.random()*2000; // next update 3-5s
+        }
+    });
+}
+
+        // Small random jitter
+        x += (Math.random()-0.5)*0.2;
+        y += (Math.random()-0.5)*0.2;
+
+        // Boundaries
+        x = Math.max(0, Math.min(town.clientWidth-30, x));
+        y = Math.max(0, Math.min(town.clientHeight-30, y));
+
+        avatar.style.left = x + 'px';
+        avatar.style.top = y + 'px';
+        avatar.speech.style.left = x + 'px';
+        avatar.speech.style.top = (y-20) + 'px';
+
+        // Slow text updates
         avatar.textTimer -= 500; // interval in ms
         if(avatar.textTimer <= 0){
             let msg = thoughts[Math.floor(Math.random()*thoughts.length)];
@@ -141,7 +168,7 @@ function moveAvatars() {
     });
 }
 
-setInterval(moveAvatars, 500); // slower updates
+setInterval(moveAvatars, 500); // update avatars every 0.5s
 avatars.forEach(avatar => {
     avatar.speed = 0.5; // All avatars now move at the same slower speed
 });
