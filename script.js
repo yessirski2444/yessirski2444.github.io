@@ -43,6 +43,8 @@ town.appendChild(road);
 // Create avatars with AI goals
 for (let i = 0; i < avatarCount; i++) {
     const avatar = document.createElement('div');
+    avatar.speed = 0.5;       // uniform slower speed
+    avatar.textTimer = 0;     // timer for slow speech updates
     avatar.classList.add('avatar');
     avatar.style.backgroundColor = `hsl(${Math.random()*360}, 70%, 50%)`;
     avatar.style.left = Math.random() * (town.clientWidth - 30) + 'px';
@@ -80,27 +82,49 @@ function moveAvatars() {
         const dx = avatar.goal.x - x;
         const dy = avatar.goal.y - y;
         const dist = Math.sqrt(dx*dx + dy*dy);
-        if(dist>1){
+
+        if(dist > 1){
             x += (dx/dist) * avatar.speed;
             y += (dy/dist) * avatar.speed;
         } else {
-            // Goal reached, pick new goal
             avatar.goal = objects[Math.floor(Math.random()*objects.length)];
         }
 
-        // Random jitter
-        x += (Math.random()-0.5) * 0.2;
-        y += (Math.random()-0.5) * 0.2;
+        // Avoid crowding
+        avatars.forEach(other=>{
+            if(avatar !== other){
+                let dx2 = x - parseFloat(other.style.left);
+                let dy2 = y - parseFloat(other.style.top);
+                let dist2 = Math.sqrt(dx2*dx2 + dy2*dy2);
+                if(dist2 < 50){
+                    x += (dx2/dist2)*0.3;
+                    y += (dy2/dist2)*0.3;
+                }
+            }
+        });
 
+        // Small random jitter
+        x += (Math.random()-0.5)*0.2;
+        y += (Math.random()-0.5)*0.2;
+
+        // Boundaries
         x = Math.max(0, Math.min(town.clientWidth-30, x));
         y = Math.max(0, Math.min(town.clientHeight-30, y));
 
         avatar.style.left = x + 'px';
         avatar.style.top = y + 'px';
-
         avatar.speech.style.left = x + 'px';
         avatar.speech.style.top = (y-20) + 'px';
+
+        // Slow text updates
+        avatar.textTimer -= 500; // interval in ms
+        if(avatar.textTimer <= 0){
+            let msg = thoughts[Math.floor(Math.random()*thoughts.length)];
+            avatar.speech.innerText = msg;
+            avatar.textTimer = 3000 + Math.random()*2000; // next update 3-5s
+        }
     });
+}
 
     // Avatar interactions
     avatars.forEach(a1=>{
