@@ -81,16 +81,16 @@ function moveAvatars() {
         const dy = avatar.goal.y - y;
         const dist = Math.sqrt(dx*dx + dy*dy);
         if(dist>1){
-            x += (dx/dist)*1.5;
-            y += (dy/dist)*1.5;
+            x += (dx/dist)*0.5;  // slower step
+            y += (dy/dist)*0.5;  // slower step
         } else {
             // Goal reached, pick new goal
             avatar.goal = objects[Math.floor(Math.random()*objects.length)];
         }
 
         // Random jitter
-        x += (Math.random()-0.5)*1;
-        y += (Math.random()-0.5)*1;
+        x += (Math.random()-0.5)*0.3;  // smaller random movement
+        y += (Math.random()-0.5)*0.3;  // smaller random movement
 
         x = Math.max(0, Math.min(town.clientWidth-30, x));
         y = Math.max(0, Math.min(town.clientHeight-30, y));
@@ -117,4 +117,4 @@ function moveAvatars() {
     });
 }
 
-setInterval(moveAvatars,200);
+setInterval(moveAvatars, 500); // slower updates
